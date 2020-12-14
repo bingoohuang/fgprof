@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"net/http/httptest"
 	_ "net/http/pprof"
 
 	"github.com/felixge/fgprof"
@@ -35,13 +36,26 @@ func main() {
 	sleepURL, stop = StartSleepServer()
 	defer stop()
 
-	for {
+	for i := 0; ; i++ {
 		// Http request to a web service that might be slow.
+		start := time.Now()
 		slowNetworkRequest()
+		now := time.Now()
+		if i%10000 == 0 {
+			fmt.Printf("slowNetworkRequest: %s\n", now.Sub(start))
+		}
 		// Some heavy CPU computation.
 		cpuIntensiveTask()
+		now2 := time.Now()
+		if i%10000 == 0 {
+			fmt.Printf("cpuIntensiveTask: %s\n", now2.Sub(now))
+		}
 		// Poorly named function that you don't understand yet.
 		weirdFunction()
+		now3 := time.Now()
+		if i%10000 == 0 {
+			fmt.Printf("weirdFunction: %s\n", now3.Sub(now2))
+		}
 	}
 }
 
@@ -69,4 +83,23 @@ func cpuIntensiveTask() {
 
 func weirdFunction() {
 	time.Sleep(sleepTime)
+}
+
+// StartSleepServer starts a server that supports a ?sleep parameter to
+// simulate slow http responses. It returns the url of that server and a
+// function to stop it.
+func StartSleepServer() (url string, stop func()) {
+	server := httptest.NewServer(http.HandlerFunc(sleepHandler))
+	return server.URL, server.Close
+}
+
+func sleepHandler(w http.ResponseWriter, r *http.Request) {
+	sleep := r.URL.Query().Get("sleep")
+	sleepD, err := time.ParseDuration(sleep)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "bad duration: %s: %s\n", sleep, err)
+	}
+	time.Sleep(sleepD)
+	fmt.Fprintf(w, "slept for: %s\n", sleepD)
 }

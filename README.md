@@ -101,8 +101,8 @@ func main() {
 }
 ```
 
-```
-go tool pprof -http=:6061 http://localhost:6060/debug/pprof/profile?seconds=10
+```bash
+go tool pprof -http=:6061 "http://localhost:6060/debug/pprof/profile?seconds=10"
 ```
 
 That was easy! Looks like we're spending all our time in `cpuIntensiveTask()`, so let's focus on that?
@@ -111,7 +111,7 @@ That was easy! Looks like we're spending all our time in `cpuIntensiveTask()`, s
 
 But before we get carried away, let's quickly double check this assumption by manually timing our function calls with `time.Since()` as described above:
 
-```
+```log
 slowNetworkRequest: 66.815041ms
 cpuIntensiveTask: 30.000672ms
 weirdFunction: 10.64764ms
@@ -127,8 +127,8 @@ Oh no, the builtin CPU profiler is misleading us! How is that possible? Well, it
 
 Let's try something else. The `/debug/pprof/trace` endpoint includes a "synchronization blocking profile", maybe that's what we need?
 
-```
-curl -so pprof.trace http://localhost:6060/debug/pprof/trace?seconds=10
+```bash
+curl -so pprof.trace "http://localhost:6060/debug/pprof/trace?seconds=10"
 go tool trace --pprof=sync pprof.trace > sync.pprof
 go tool pprof --http=:6061 sync.pprof
 ```
@@ -157,10 +157,8 @@ func main() {
 }
 ```
 
-
-
-```
-go tool pprof --http=:6061 http://localhost:6060/debug/fgprof?seconds=10
+```bash
+go tool pprof --http=:6061 "http://localhost:6060/debug/fgprof?seconds=10"
 ```
 
 Finally, a profile that shows all three of our functions and how much time we're spending on them. It also turns out our `weirdFunction()` was simply calling `time.Sleep()`, how weird indeed!
