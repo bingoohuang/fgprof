@@ -203,6 +203,8 @@ There is no perfect approach to profiling, and fgprof is no exception. Below is 
 
 The following articles helped me to learn more about how profilers in general, and the Go profiler in particular work.
 
+- [Off-CPU Analysis](http://www.brendangregg.com/offcpuanalysis.html)
+- [分析Go程序的Off-CPU性能](https://colobu.com/2020/11/12/analyze-On-CPU-in-go/)
 - [How do Ruby & Python profilers work?](https://jvns.ca/blog/2017/12/17/how-do-ruby---python-profilers-work-/) by Julia Evans
 - [Profiling Go programs with pprof](https://jvns.ca/blog/2017/09/24/profiling-go-with-pprof/) by Julia Evans
 
